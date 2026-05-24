@@ -17,17 +17,15 @@ import {
   BloodBag, Gender, BloodGroup, Place, Department, Condition, 
   TestEntry, TestResult, CrossMatchResult 
 } from '@/lib/types'
-import { saveBloodBag, isBloodBagInvoiceUnique, generateNextInvoiceNumber, getSettings } from '@/lib/store'
+import { saveBloodBag, isBloodBagInvoiceUnique, generateNextInvoiceNumber, generateNextBloodBagNumber, getSettings } from '@/lib/store'
 
 const GENDERS: Gender[] = ['Male', 'Female', 'Other']
 const BLOOD_GROUPS: BloodGroup[] = ['A +ve', 'A -ve', 'B +ve', 'B -ve', 'AB +ve', 'AB -ve', 'O +ve', 'O -ve']
-const PLACES: Place[] = ['DDCH', 'Other']
-const DEPARTMENTS: Department[] = ['Medicine', 'Surgery', 'Other']
+const PLACES: (Place | 'Other')[] = ['DDCH', 'Other']
+const DEPARTMENTS: (Department | 'Other')[] = ['Medicine', 'Surgery', 'Other']
 const CONDITIONS: Condition[] = ['Unconditional', 'Exchange', 'Donor Card']
 
 const BLOOD_BAG_TESTS = ['HBsAg', 'HCV', 'HIV', 'MALARIA', 'SYPHILIS'] as const
-
-const BLOOD_BAG_FEE = 500
 
 interface BloodBagFormProps {
   open: boolean
@@ -50,11 +48,10 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
     donorGender: '' as Gender | '',
     donorPhone: '',
     place: '' as Place | '',
-    placeOther: '',
     department: '' as Department | '',
-    departmentOther: '',
     condition: '' as Condition | '',
     crossMatch: '' as CrossMatchResult | '',
+    amount: '',
     date: new Date(),
   })
   const [testResults, setTestResults] = useState<Record<string, TestResult | null>>({})
@@ -77,11 +74,10 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
           donorGender: bloodBag.donorGender,
           donorPhone: bloodBag.donorPhone,
           place: bloodBag.place,
-          placeOther: bloodBag.placeOther || '',
           department: bloodBag.department,
-          departmentOther: bloodBag.departmentOther || '',
           condition: bloodBag.condition,
           crossMatch: bloodBag.crossMatch,
+          amount: bloodBag.totalAmount.toString(),
           date: new Date(bloodBag.date),
         })
         const results: Record<string, TestResult | null> = {}
@@ -91,10 +87,10 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
         setTestResults(results)
       } else {
         const settings = getSettings()
-        const nextInvoice = generateNextInvoiceNumber(settings.bloodBagInvoiceSuffix)
+        const nextBloodBagNo = generateNextBloodBagNumber(settings.bloodBagNumberSuffix)
         setFormData({
-          invoiceNumber: nextInvoice,
-          bloodBagNumber: '',
+          invoiceNumber: generateNextInvoiceNumber(),
+          bloodBagNumber: nextBloodBagNo,
           patientName: '',
           patientAge: '',
           patientGender: '',
@@ -105,11 +101,10 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
           donorGender: '',
           donorPhone: '',
           place: '',
-          placeOther: '',
           department: '',
-          departmentOther: '',
           condition: '',
           crossMatch: '',
+          amount: '',
           date: new Date(),
         })
         setTestResults({})
@@ -174,14 +169,8 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
     if (!formData.place) {
       newErrors.place = 'Place is required'
     }
-    if (formData.place === 'Other' && !formData.placeOther.trim()) {
-      newErrors.placeOther = 'Please specify place'
-    }
     if (!formData.department) {
       newErrors.department = 'Department is required'
-    }
-    if (formData.department === 'Other' && !formData.departmentOther.trim()) {
-      newErrors.departmentOther = 'Please specify department'
     }
     if (!formData.condition) {
       newErrors.condition = 'Condition is required'
@@ -220,13 +209,11 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
       donorGender: formData.donorGender as Gender,
       donorPhone: formData.donorPhone,
       place: formData.place as Place,
-      placeOther: formData.place === 'Other' ? formData.placeOther : undefined,
       department: formData.department as Department,
-      departmentOther: formData.department === 'Other' ? formData.departmentOther : undefined,
       condition: formData.condition as Condition,
       tests,
       crossMatch: formData.crossMatch as CrossMatchResult,
-      totalAmount: BLOOD_BAG_FEE,
+      totalAmount: formData.amount ? parseInt(formData.amount) : 0,
       date: format(formData.date, 'yyyy-MM-dd'),
       createdAt: bloodBag?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -450,18 +437,6 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
                 {errors.place && <p className="text-sm text-destructive">{errors.place}</p>}
               </div>
 
-              {formData.place === 'Other' && (
-                <div className="space-y-2">
-                  <Label>Specify Place *</Label>
-                  <Input
-                    value={formData.placeOther}
-                    onChange={(e) => setFormData(prev => ({ ...prev, placeOther: e.target.value }))}
-                    className={errors.placeOther ? 'border-destructive' : ''}
-                  />
-                  {errors.placeOther && <p className="text-sm text-destructive">{errors.placeOther}</p>}
-                </div>
-              )}
-
               <div className="space-y-2">
                 <Label>Department *</Label>
                 <Select
@@ -478,18 +453,6 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
                 {errors.department && <p className="text-sm text-destructive">{errors.department}</p>}
               </div>
 
-              {formData.department === 'Other' && (
-                <div className="space-y-2">
-                  <Label>Specify Department *</Label>
-                  <Input
-                    value={formData.departmentOther}
-                    onChange={(e) => setFormData(prev => ({ ...prev, departmentOther: e.target.value }))}
-                    className={errors.departmentOther ? 'border-destructive' : ''}
-                  />
-                  {errors.departmentOther && <p className="text-sm text-destructive">{errors.departmentOther}</p>}
-                </div>
-              )}
-
               <div className="space-y-2">
                 <Label>Condition *</Label>
                 <Select
@@ -504,6 +467,18 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
                   </SelectContent>
                 </Select>
                 {errors.condition && <p className="text-sm text-destructive">{errors.condition}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount *</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  min="0"
+                  value={formData.amount}
+                  onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                  placeholder="Enter amount"
+                />
               </div>
             </div>
           </div>

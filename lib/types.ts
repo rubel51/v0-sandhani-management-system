@@ -58,9 +58,7 @@ export interface BloodBag {
   donorGender: Gender
   donorPhone: string
   place: Place
-  placeOther?: string
   department: Department
-  departmentOther?: string
   condition: Condition
   tests: TestEntry[]
   crossMatch: CrossMatchResult
@@ -71,7 +69,7 @@ export interface BloodBag {
 }
 
 export interface Settings {
-  bloodBagInvoiceSuffix: string
+  bloodBagNumberSuffix: string
 }
 
 export interface DashboardStats {

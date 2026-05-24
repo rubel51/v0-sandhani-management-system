@@ -342,8 +342,20 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
                   />
                   <Label htmlFor={test} className="flex-1 cursor-pointer text-sm">
                     {test}
-                    <span className="ml-1 text-muted-foreground">(৳{TEST_FEES[test]})</span>
                   </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Amount Display */}
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+            <h4 className="mb-3 font-semibold text-primary">Test Fees</h4>
+            <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+              {TEST_TYPES.map((test) => (
+                <div key={test} className="flex justify-between">
+                  <span>{test}:</span>
+                  <span className="font-medium">৳{TEST_FEES[test]}</span>
                 </div>
               ))}
             </div>

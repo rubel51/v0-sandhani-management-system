@@ -11,7 +11,7 @@ import { Settings as SettingsType } from '@/lib/types'
 
 export function SettingsPage() {
   const [settings, setSettings] = useState<SettingsType>({
-    bloodBagInvoiceSuffix: '',
+    bloodBagNumberSuffix: '',
   })
   const [saved, setSaved] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -46,28 +46,28 @@ export function SettingsPage() {
         </p>
       </div>
 
-      {/* Blood Bag Invoice Settings */}
+      {/* Blood Bag Number Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Blood Bag Invoice Settings</CardTitle>
+          <CardTitle>Blood Bag Number Settings</CardTitle>
           <CardDescription>
-            Configure how blood bag invoice numbers are generated
+            Configure how blood bag numbers are generated
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="suffix">Invoice Number Suffix</Label>
+            <Label htmlFor="suffix">Blood Bag Number Suffix</Label>
             <Input
               id="suffix"
-              value={settings.bloodBagInvoiceSuffix}
-              onChange={(e) => setSettings(prev => ({ ...prev, bloodBagInvoiceSuffix: e.target.value }))}
+              value={settings.bloodBagNumberSuffix}
+              onChange={(e) => setSettings(prev => ({ ...prev, bloodBagNumberSuffix: e.target.value }))}
               placeholder="e.g., A, B, BB"
               className="max-w-xs"
             />
             <p className="text-sm text-muted-foreground">
-              This suffix will be appended to blood bag invoice numbers.
+              This suffix will be appended to blood bag numbers.
               <br />
-              Example: If suffix is &quot;A&quot;, invoice will be &quot;123/A&quot;
+              Example: If suffix is &quot;A&quot;, blood bag number will be &quot;123/A&quot;
             </p>
           </div>
 

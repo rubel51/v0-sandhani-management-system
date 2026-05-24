@@ -2,10 +2,10 @@
 
 import { useRef } from 'react'
 import { format } from 'date-fns'
+import { X, Printer } from 'lucide-react'
 import { BloodBag } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Printer } from 'lucide-react'
 
 interface BloodBagPrintProps {
   open: boolean
@@ -53,11 +53,6 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
             }
             .header h1 .sandhani {
               color: #dc2626;
-            }
-            .header p {
-              margin: 4px 0 0;
-              font-size: 9pt;
-              color: #666;
             }
             .section {
               border: 2px solid #1e3a5f;
@@ -139,7 +134,7 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
               color: #dc2626;
             }
             .signature {
-              margin-top: 40px;
+              margin-top: 80px;
               text-align: right;
             }
             .signature-line {
@@ -155,7 +150,36 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
         <body>
           <div class="header">
             <h1><span class="sandhani">SANDHANI</span> Dhaka Dental College Unit</h1>
-            <p>Developed by Dr. Shaikh Mahamudul Hasan, Former President, 2016-17 Session</p>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Other Information</div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Invoice No:</span>
+                <span class="info-value">${bloodBag.invoiceNumber}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Bag No:</span>
+                <span class="info-value">${bloodBag.bloodBagNumber}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Date:</span>
+                <span class="info-value">${format(new Date(bloodBag.date), 'dd/MM/yyyy')}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Condition:</span>
+                <span class="info-value">${bloodBag.condition}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Place:</span>
+                <span class="info-value">${bloodBag.place}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Department:</span>
+                <span class="info-value">${bloodBag.department}</span>
+              </div>
+            </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
@@ -208,36 +232,6 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
             </div>
           </div>
 
-          <div class="section">
-            <div class="section-title">Other Information</div>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">Invoice No:</span>
-                <span class="info-value">${bloodBag.invoiceNumber}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Bag No:</span>
-                <span class="info-value">${bloodBag.bloodBagNumber}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Date:</span>
-                <span class="info-value">${format(new Date(bloodBag.date), 'dd/MM/yyyy')}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Place:</span>
-                <span class="info-value">${bloodBag.place === 'Other' ? bloodBag.placeOther : bloodBag.place}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Department:</span>
-                <span class="info-value">${bloodBag.department === 'Other' ? bloodBag.departmentOther : bloodBag.department}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Condition:</span>
-                <span class="info-value">${bloodBag.condition}</span>
-              </div>
-            </div>
-          </div>
-
           <div class="results">
             <h3 style="margin-bottom: 12px; color: #1e3a5f; font-size: 11pt;">Test Results</h3>
             ${bloodBag.tests.map(t => `
@@ -274,12 +268,17 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle className="flex items-center justify-between pr-8">
             <span>Print Preview - {bloodBag.invoiceNumber}</span>
-            <Button onClick={handlePrint} size="sm">
-              <Printer className="mr-2 h-4 w-4" />
-              Print
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button onClick={handlePrint} size="sm">
+                <Printer className="mr-2 h-4 w-4" />
+                Print
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
 
@@ -290,9 +289,19 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
               <span className="text-[oklch(0.55_0.22_25)]">SANDHANI</span>
               <span> Dhaka Dental College Unit</span>
             </h1>
-            <p className="text-xs text-muted-foreground">
-              Developed by Dr. Shaikh Mahamudul Hasan, Former President, 2016-17 Session
-            </p>
+          </div>
+
+          {/* Other Info */}
+          <div className="mb-4 rounded-lg border p-3">
+            <h3 className="mb-2 border-b pb-1 text-sm font-semibold">Other Information</h3>
+            <div className="grid grid-cols-2 gap-1 text-xs">
+              <div><strong>Invoice:</strong> {bloodBag.invoiceNumber}</div>
+              <div><strong>Bag No:</strong> {bloodBag.bloodBagNumber}</div>
+              <div><strong>Date:</strong> {format(new Date(bloodBag.date), 'dd/MM/yyyy')}</div>
+              <div><strong>Condition:</strong> {bloodBag.condition}</div>
+              <div><strong>Place:</strong> {bloodBag.place}</div>
+              <div><strong>Department:</strong> {bloodBag.department}</div>
+            </div>
           </div>
 
           {/* Patient & Donor Info */}
@@ -316,19 +325,6 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
                 <div><strong>Gender:</strong> {bloodBag.donorGender}</div>
                 <div><strong>Phone:</strong> {bloodBag.donorPhone}</div>
               </div>
-            </div>
-          </div>
-
-          {/* Other Info */}
-          <div className="mb-4 rounded-lg border p-3">
-            <h3 className="mb-2 border-b pb-1 text-sm font-semibold">Other Information</h3>
-            <div className="grid grid-cols-2 gap-1 text-xs">
-              <div><strong>Invoice:</strong> {bloodBag.invoiceNumber}</div>
-              <div><strong>Bag No:</strong> {bloodBag.bloodBagNumber}</div>
-              <div><strong>Date:</strong> {format(new Date(bloodBag.date), 'dd/MM/yyyy')}</div>
-              <div><strong>Place:</strong> {bloodBag.place === 'Other' ? bloodBag.placeOther : bloodBag.place}</div>
-              <div><strong>Department:</strong> {bloodBag.department === 'Other' ? bloodBag.departmentOther : bloodBag.department}</div>
-              <div><strong>Condition:</strong> {bloodBag.condition}</div>
             </div>
           </div>
 
@@ -356,7 +352,7 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
           </div>
 
           {/* Signature */}
-          <div className="mt-8 text-right">
+          <div className="mt-16 text-right">
             <div className="ml-auto w-40 border-t border-foreground pt-1 text-center text-xs">
               Signature
             </div>

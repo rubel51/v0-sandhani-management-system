@@ -9,7 +9,7 @@ const STORAGE_KEYS = {
 }
 
 const DEFAULT_SETTINGS: Settings = {
-  bloodBagInvoiceSuffix: '',
+  bloodBagNumberSuffix: '',
 }
 
 const BLOOD_GROUPS: BloodGroup[] = ['A +ve', 'A -ve', 'B +ve', 'B -ve', 'AB +ve', 'AB -ve', 'O +ve', 'O -ve']
@@ -200,7 +200,7 @@ export function getDashboardStats(fromDate?: string, toDate?: string): Dashboard
 }
 
 // Generate next invoice number
-export function generateNextInvoiceNumber(prefix: string = ''): string {
+export function generateNextInvoiceNumber(): string {
   const patients = getPatients()
   const bloodBags = getBloodBags()
   
@@ -218,6 +218,22 @@ export function generateNextInvoiceNumber(prefix: string = ''): string {
     }
   })
   
+  return `${maxNum + 1}`
+}
+
+// Generate next blood bag number with suffix
+export function generateNextBloodBagNumber(suffix: string = ''): string {
+  const bloodBags = getBloodBags()
+  
+  let maxNum = 0
+  bloodBags.forEach(b => {
+    const match = b.bloodBagNumber.match(/^(\d+)/)
+    if (match) {
+      const num = parseInt(match[1], 10)
+      if (num > maxNum) maxNum = num
+    }
+  })
+  
   const nextNum = maxNum + 1
-  return prefix ? `${nextNum}/${prefix}` : `${nextNum}`
+  return suffix ? `${nextNum}/${suffix}` : `${nextNum}`
 }

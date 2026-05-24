@@ -2,11 +2,10 @@
 
 import { useRef } from 'react'
 import { format } from 'date-fns'
-import Image from 'next/image'
+import { X, Printer } from 'lucide-react'
 import { Patient } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Printer } from 'lucide-react'
 
 interface PatientPrintProps {
   open: boolean
@@ -67,11 +66,6 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
             .header h1 .sandhani {
               color: #dc2626;
             }
-            .header p {
-              margin: 4px 0 0;
-              font-size: 10pt;
-              color: #666;
-            }
             .info-box {
               border: 2px solid #1e3a5f;
               border-radius: 8px;
@@ -115,7 +109,7 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
               color: #16a34a;
             }
             .signature {
-              margin-top: 60px;
+              margin-top: 120px;
               text-align: right;
             }
             .signature-line {
@@ -156,7 +150,6 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
           <div class="page">
             <div class="header">
               <h1><span class="sandhani">SANDHANI</span> Dhaka Dental College Unit</h1>
-              <p>Developed by Dr. Shaikh Mahamudul Hasan, Former President, 2016-17 Session</p>
             </div>
             
             <div class="info-box">
@@ -211,18 +204,33 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
             <div class="page">
               <div class="header">
                 <h1><span class="sandhani">SANDHANI</span> Dhaka Dental College Unit</h1>
-                <p>Blood Group Report</p>
               </div>
               
               <div class="info-box">
                 <div class="info-grid">
                   <div class="info-item">
-                    <span class="info-label">Name:</span>
-                    <span>${patient.name}</span>
+                    <span class="info-label">Invoice No:</span>
+                    <span>${patient.invoiceNumber}</span>
                   </div>
                   <div class="info-item">
                     <span class="info-label">Date:</span>
                     <span>${format(new Date(patient.date), 'dd/MM/yyyy')}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Name:</span>
+                    <span>${patient.name}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Age:</span>
+                    <span>${patient.age} years</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Gender:</span>
+                    <span>${patient.gender}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Phone:</span>
+                    <span>${patient.phone}</span>
                   </div>
                 </div>
               </div>
@@ -254,12 +262,17 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle className="flex items-center justify-between pr-8">
             <span>Print Preview - {patient.invoiceNumber}</span>
-            <Button onClick={handlePrint} size="sm">
-              <Printer className="mr-2 h-4 w-4" />
-              Print
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button onClick={handlePrint} size="sm">
+                <Printer className="mr-2 h-4 w-4" />
+                Print
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
 
@@ -270,9 +283,6 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
               <span className="text-[oklch(0.55_0.22_25)]">SANDHANI</span>
               <span> Dhaka Dental College Unit</span>
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Developed by Dr. Shaikh Mahamudul Hasan, Former President, 2016-17 Session
-            </p>
           </div>
 
           {/* Patient Info Box */}
@@ -313,7 +323,7 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
           )}
 
           {/* Signature */}
-          <div className="mt-12 text-right">
+          <div className="mt-24 text-right">
             <div className="ml-auto w-48 border-t border-foreground pt-1 text-center text-sm">
               Signature
             </div>
