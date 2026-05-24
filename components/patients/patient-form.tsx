@@ -217,8 +217,12 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
               <Input
                 id="invoiceNumber"
                 value={formData.invoiceNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '')
+                  setFormData(prev => ({ ...prev, invoiceNumber: value }))
+                }}
                 className={errors.invoiceNumber ? 'border-destructive' : ''}
+                placeholder="Numbers only"
               />
               {errors.invoiceNumber && (
                 <p className="text-sm text-destructive">{errors.invoiceNumber}</p>
@@ -256,8 +260,12 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^a-zA-Z\s.]/g, '')
+                  setFormData(prev => ({ ...prev, name: value }))
+                }}
                 className={errors.name ? 'border-destructive' : ''}
+                placeholder="Alphabet only"
               />
               {errors.name && (
                 <p className="text-sm text-destructive">{errors.name}</p>
@@ -348,18 +356,7 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
             </div>
           </div>
 
-          {/* Amount Display */}
-          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
-            <h4 className="mb-3 font-semibold text-primary">Test Fees</h4>
-            <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
-              {TEST_TYPES.map((test) => (
-                <div key={test} className="flex justify-between">
-                  <span>{test}:</span>
-                  <span className="font-medium">৳{TEST_FEES[test]}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+
 
           {/* Test Results */}
           {selectedTests.length > 0 && (
