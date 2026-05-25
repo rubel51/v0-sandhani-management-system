@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { v4 as uuidv4 } from 'uuid'
-import { Calendar as CalendarIcon, X } from 'lucide-react'
+import { Calendar as CalendarIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -32,17 +32,7 @@ const TEST_TYPES: TestType[] = [
 
 const BLOOD_GROUPS: BloodGroup[] = ['A +ve', 'A -ve', 'B +ve', 'B -ve', 'AB +ve', 'AB -ve', 'O +ve', 'O -ve']
 
-const TEST_FEES: Record<TestType, number> = {
-  'HBsAg': 200,
-  'HCV': 200,
-  'HIV': 200,
-  'MALARIA': 100,
-  'SYPHILIS': 100,
-  'Blood Sugar (Fasting)': 100,
-  'Blood Sugar (2 Hours After)': 100,
-  'Blood Sugar (Random)': 100,
-  'Blood Grouping': 150,
-}
+
 
 interface PatientFormProps {
   open: boolean
@@ -63,6 +53,7 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
   const [selectedTests, setSelectedTests] = useState<TestType[]>([])
   const [testResults, setTestResults] = useState<Record<string, TestResult | null>>({})
   const [bloodGroup, setBloodGroup] = useState<BloodGroup | ''>('')
+  const [customAmount, setCustomAmount] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -79,6 +70,7 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
         })
         setSelectedTests(patient.tests.map(t => t.test))
         const results: Record<string, TestResult | null> = {}
+        let savedAmount = 0
         patient.tests.forEach(t => {
           results[t.test] = t.result
           if (t.test === 'Blood Grouping' && t.bloodGroup) {
@@ -86,6 +78,7 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
           }
         })
         setTestResults(results)
+        setCustomAmount(patient.totalAmount?.toString() || '')
       } else {
         const nextInvoice = generateNextInvoiceNumber()
         setFormData({
@@ -99,6 +92,7 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
         setSelectedTests([])
         setTestResults({})
         setBloodGroup('')
+        setCustomAmount('')
       }
       setErrors({})
     }
@@ -143,6 +137,10 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
       newErrors.bloodGroup = 'Blood group must be selected'
     }
 
+    if (!customAmount || parseInt(customAmount) < 0) {
+      newErrors.amount = 'Valid amount is required'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -160,7 +158,7 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
       bloodGroup: test === 'Blood Grouping' ? bloodGroup as BloodGroup : undefined,
     }))
 
-    const totalAmount = selectedTests.reduce((sum, test) => sum + TEST_FEES[test], 0)
+    const totalAmount = parseInt(customAmount) || 0
 
     const patientData: Patient = {
       id: patient?.id || uuidv4(),
@@ -356,9 +354,22 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
             </div>
           </div>
 
-
-
-          {/* Test Results */}
+          {/* Amount Input */}
+          <div className="space-y-2">
+            <Label htmlFor="amount">Amount *</Label>
+            <Input
+              id="amount"
+              type="number"
+              min="0"
+              value={customAmount}
+              onChange={(e) => setCustomAmount(e.target.value)}
+              placeholder="Enter amount"
+              className={errors.amount ? 'border-destructive' : ''}
+            />
+            {errors.amount && (
+              <p className="text-sm text-destructive">{errors.amount}</p>
+            )}
+          </div>
           {selectedTests.length > 0 && (
             <div className="space-y-3">
               <Label>Test Results</Label>
@@ -406,18 +417,6 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
                     )}
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* Total Amount */}
-          {selectedTests.length > 0 && (
-            <div className="rounded-lg bg-primary/10 p-4">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Total Amount:</span>
-                <span className="text-xl font-bold text-primary">
-                  ৳ {selectedTests.reduce((sum, test) => sum + TEST_FEES[test], 0)}
-                </span>
               </div>
             </div>
           )}

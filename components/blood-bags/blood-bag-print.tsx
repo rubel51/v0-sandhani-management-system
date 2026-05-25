@@ -2,7 +2,7 @@
 
 import { useRef } from 'react'
 import { format } from 'date-fns'
-import { X, Printer } from 'lucide-react'
+import { Printer } from 'lucide-react'
 import { BloodBag } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -50,9 +50,7 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
             .header h1 {
               margin: 0;
               font-size: 16pt;
-            }
-            .header h1 .sandhani {
-              color: #dc2626;
+              color: #1e3a5f;
             }
             .section {
               border: 2px solid #1e3a5f;
@@ -149,7 +147,7 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
         </head>
         <body>
           <div class="header">
-            <h1><span class="sandhani">SANDHANI</span> Dhaka Dental College Unit</h1>
+            <h1>Blood Bag Report</h1>
           </div>
 
           <div class="section">
@@ -270,15 +268,10 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between pr-8">
             <span>Print Preview - {bloodBag.invoiceNumber}</span>
-            <div className="flex items-center gap-4">
-              <Button onClick={handlePrint} size="sm">
-                <Printer className="mr-2 h-4 w-4" />
-                Print
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button onClick={handlePrint} size="sm">
+              <Printer className="mr-2 h-4 w-4" />
+              Print
+            </Button>
           </DialogTitle>
         </DialogHeader>
 
@@ -286,8 +279,7 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
           {/* Header */}
           <div className="mb-4 border-b-2 border-primary pb-3 text-center">
             <h1 className="text-lg font-bold">
-              <span className="text-[oklch(0.55_0.22_25)]">SANDHANI</span>
-              <span> Dhaka Dental College Unit</span>
+              <span>Blood Bag Report</span>
             </h1>
           </div>
 

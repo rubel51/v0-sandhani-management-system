@@ -2,7 +2,7 @@
 
 import { useRef } from 'react'
 import { format } from 'date-fns'
-import { X, Printer } from 'lucide-react'
+import { Printer } from 'lucide-react'
 import { Patient } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -62,9 +62,7 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
             .header h1 {
               margin: 0;
               font-size: 18pt;
-            }
-            .header h1 .sandhani {
-              color: #dc2626;
+              color: #1e3a5f;
             }
             .info-box {
               border: 2px solid #1e3a5f;
@@ -120,36 +118,39 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
               text-align: center;
             }
             .blood-group-page {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              min-height: 400px;
+              margin-top: 24px;
+            }
+            .blood-group-page h2 {
               text-align: center;
-            }
-            .blood-group-display {
-              border: 4px solid #dc2626;
-              border-radius: 16px;
-              padding: 40px 60px;
-              margin: 24px 0;
-            }
-            .blood-group-display .group {
-              font-size: 72pt;
-              font-weight: bold;
-              color: #dc2626;
-              line-height: 1;
-            }
-            .blood-group-display .rh {
-              font-size: 36pt;
-              font-weight: bold;
+              font-size: 18pt;
               color: #1e3a5f;
+              margin-bottom: 24px;
+              border-bottom: 2px solid #1e3a5f;
+              padding-bottom: 12px;
+            }
+            .blood-group-result {
+              display: flex;
+              justify-content: space-between;
+              padding: 12px 0;
+              border-bottom: 1px dotted #ccc;
+              font-size: 14pt;
+            }
+            .blood-group-result:last-child {
+              border-bottom: none;
+            }
+            .blood-group-label {
+              font-weight: 500;
+            }
+            .blood-group-value {
+              font-weight: 700;
+              color: #dc2626;
             }
           </style>
         </head>
         <body>
           <div class="page">
             <div class="header">
-              <h1><span class="sandhani">SANDHANI</span> Dhaka Dental College Unit</h1>
+              <h1>Test Report</h1>
             </div>
             
             <div class="info-box">
@@ -203,7 +204,7 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
           ${hasBloodGroup ? `
             <div class="page">
               <div class="header">
-                <h1><span class="sandhani">SANDHANI</span> Dhaka Dental College Unit</h1>
+                <h1>Blood Grouping Report</h1>
               </div>
               
               <div class="info-box">
@@ -236,10 +237,14 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
               </div>
 
               <div class="blood-group-page">
-                <h2>Blood Group</h2>
-                <div class="blood-group-display">
-                  <div class="group">${bloodGroupTest?.bloodGroup?.split(' ')[0]}</div>
-                  <div class="rh">${bloodGroupTest?.bloodGroup?.split(' ')[1]}</div>
+                <h2>Blood Grouping Report</h2>
+                <div class="blood-group-result">
+                  <span class="blood-group-label">Blood Group..................................................</span>
+                  <span class="blood-group-value">${bloodGroupTest?.bloodGroup?.split(' ')[0]}</span>
+                </div>
+                <div class="blood-group-result">
+                  <span class="blood-group-label">Rh Factor......................................................</span>
+                  <span class="blood-group-value">${bloodGroupTest?.bloodGroup?.split(' ')[1]}</span>
                 </div>
               </div>
 
@@ -264,15 +269,10 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between pr-8">
             <span>Print Preview - {patient.invoiceNumber}</span>
-            <div className="flex items-center gap-4">
-              <Button onClick={handlePrint} size="sm">
-                <Printer className="mr-2 h-4 w-4" />
-                Print
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button onClick={handlePrint} size="sm">
+              <Printer className="mr-2 h-4 w-4" />
+              Print
+            </Button>
           </DialogTitle>
         </DialogHeader>
 
@@ -280,8 +280,7 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
           {/* Header */}
           <div className="mb-6 border-b-2 border-primary pb-4 text-center">
             <h1 className="text-xl font-bold">
-              <span className="text-[oklch(0.55_0.22_25)]">SANDHANI</span>
-              <span> Dhaka Dental College Unit</span>
+              <span>Test Report</span>
             </h1>
           </div>
 
@@ -314,11 +313,22 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
 
           {/* Blood Group if exists */}
           {patient.tests.find(t => t.test === 'Blood Grouping')?.bloodGroup && (
-            <div className="mt-6 rounded-lg border-2 border-[oklch(0.55_0.22_25)] p-4 text-center">
-              <h3 className="mb-2 font-semibold">Blood Group</h3>
-              <p className="text-3xl font-bold text-[oklch(0.55_0.22_25)]">
-                {patient.tests.find(t => t.test === 'Blood Grouping')?.bloodGroup}
-              </p>
+            <div className="mt-6 rounded-lg border-2 border-primary p-4">
+              <h3 className="mb-4 border-b pb-2 text-center font-semibold text-primary">Blood Grouping Report</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between border-b border-dotted border-muted-foreground/30 py-2">
+                  <span className="font-medium">Blood Group..........................</span>
+                  <span className="font-bold text-[oklch(0.55_0.22_25)]">
+                    {patient.tests.find(t => t.test === 'Blood Grouping')?.bloodGroup?.split(' ')[0]}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-dotted border-muted-foreground/30 py-2">
+                  <span className="font-medium">Rh Factor................................</span>
+                  <span className="font-bold text-[oklch(0.55_0.22_25)]">
+                    {patient.tests.find(t => t.test === 'Blood Grouping')?.bloodGroup?.split(' ')[1]}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 
