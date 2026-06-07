@@ -97,11 +97,8 @@ export function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="rounded-lg bg-muted p-4">
             <h3 className="font-semibold">
-              <span className="text-[oklch(0.55_0.22_25)]">SANDHANI</span> Dhaka Dental College Unit
+              <span className="text-destructive">SANDHANI</span> Dhaka Dental College Unit
             </h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Medical Management System - Blood Bank &amp; Pathology
-            </p>
             <p className="mt-2 text-sm text-muted-foreground">
               Developed by Dr. Shaikh Mahamudul Hasan
               <br />
@@ -118,27 +115,6 @@ export function SettingsPage() {
               <li>Dashboard with real-time statistics</li>
               <li>Date range filtering for reports</li>
               <li>Local data storage (works offline)</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Data Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Data Information</CardTitle>
-          <CardDescription>
-            All data is stored locally in your browser
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-            <p className="font-medium">Important:</p>
-            <ul className="mt-2 list-inside list-disc space-y-1">
-              <li>Data is stored in your browser&apos;s local storage</li>
-              <li>Clearing browser data will delete all records</li>
-              <li>Data is specific to this browser and device</li>
-              <li>Consider regularly exporting important data</li>
             </ul>
           </div>
         </CardContent>
