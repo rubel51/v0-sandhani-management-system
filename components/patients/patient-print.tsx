@@ -279,7 +279,7 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
               <div><strong>Invoice No:</strong> {patient.invoiceNumber}</div>
               <div><strong>Date:</strong> {format(new Date(patient.date), 'dd/MM/yyyy')}</div>
               <div><strong>Name:</strong> {patient.name}</div>
-              <div><strong>Age:</strong> {patient.age} years</div>
+              <div><strong>Age:</strong> {patient.age} year</div>
               <div><strong>Gender:</strong> {patient.gender}</div>
               <div><strong>Phone:</strong> {patient.phone}</div>
             </div>
