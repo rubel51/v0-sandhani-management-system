@@ -250,6 +250,9 @@ export async function generateNextBloodBagNumber(suffix: string = ''): Promise<s
   const nextNum = maxNum + 1
   return suffix ? `${nextNum}/${suffix}` : `${nextNum}`
 }
+
+// Dashboard statistics
+export async function getDashboardStats(fromDate?: string, toDate?: string): Promise<DashboardStats> {
   let patients = await getPatients()
   let bloodBags = await getBloodBags()
   
