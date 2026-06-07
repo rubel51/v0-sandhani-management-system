@@ -17,7 +17,7 @@ import {
   BloodBag, Gender, BloodGroup, Place, Department, Condition, 
   TestEntry, TestResult, CrossMatchResult 
 } from '@/lib/types'
-import { saveBloodBag, isBloodBagInvoiceUnique, generateNextInvoiceNumber, generateNextBloodBagNumber, getSettings } from '@/lib/store'
+import { saveBloodBag, isBloodBagInvoiceUnique, generateNextInvoiceNumber, generateNextBloodBagNumber, getSettings } from '@/lib/store-electron'
 
 const GENDERS: Gender[] = ['Male', 'Female', 'Other']
 const BLOOD_GROUPS: BloodGroup[] = ['A +ve', 'A -ve', 'B +ve', 'B -ve', 'AB +ve', 'AB -ve', 'O +ve', 'O -ve']
@@ -86,11 +86,29 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
         })
         setTestResults(results)
       } else {
-        const settings = getSettings()
-        const nextBloodBagNo = generateNextBloodBagNumber(settings.bloodBagNumberSuffix)
-        setFormData({
-          invoiceNumber: generateNextInvoiceNumber(),
-          bloodBagNumber: nextBloodBagNo,
+        const loadNextNumbers = async () => {
+          try {
+            const settings = await getSettings()
+            const nextInvoice = await generateNextInvoiceNumber()
+            const nextBloodBagNo = await generateNextBloodBagNumber(settings.bloodBagNumberSuffix)
+            setFormData(prev => ({
+              ...prev,
+              invoiceNumber: nextInvoice,
+              bloodBagNumber: nextBloodBagNo,
+            }))
+          } catch (error) {
+            console.error('Failed to generate numbers:', error)
+            setFormData(prev => ({
+              ...prev,
+              invoiceNumber: '',
+              bloodBagNumber: '',
+            }))
+          }
+        }
+        loadNextNumbers()
+        
+        setFormData(prev => ({
+          ...prev,
           patientName: '',
           patientAge: '',
           patientGender: '',
@@ -106,7 +124,7 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
           crossMatch: '',
           amount: '',
           date: new Date(),
-        })
+        }))
         setTestResults({})
       }
       setErrors({})
@@ -117,13 +135,16 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
     return /^\d{11}$/.test(phone)
   }
 
-  const validate = (): boolean => {
+  const validate = async (): Promise<boolean> => {
     const newErrors: Record<string, string> = {}
 
     if (!formData.invoiceNumber.trim()) {
       newErrors.invoiceNumber = 'Invoice number is required'
-    } else if (!isBloodBagInvoiceUnique(formData.invoiceNumber, bloodBag?.id)) {
-      newErrors.invoiceNumber = 'Invoice number already exists'
+    } else {
+      const isUnique = isBloodBagInvoiceUnique(formData.invoiceNumber, bloodBag?.id)
+      if (!isUnique) {
+        newErrors.invoiceNumber = 'Invoice number already exists'
+      }
     }
 
     if (!formData.bloodBagNumber.trim()) {
@@ -183,46 +204,55 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validate()) return
+    const isValid = await validate()
+    if (!isValid) return
     
     setIsSubmitting(true)
 
-    const tests: TestEntry[] = BLOOD_BAG_TESTS.map(test => ({
-      test,
-      result: testResults[test] || null,
-    }))
+    try {
+      const tests: TestEntry[] = BLOOD_BAG_TESTS.map(test => ({
+        test,
+        result: testResults[test] || null,
+      }))
 
-    const bloodBagData: BloodBag = {
-      id: bloodBag?.id || uuidv4(),
-      invoiceNumber: formData.invoiceNumber,
-      bloodBagNumber: formData.bloodBagNumber,
-      patientName: formData.patientName.trim(),
-      patientAge: parseInt(formData.patientAge),
-      patientGender: formData.patientGender as Gender,
-      patientPhone: formData.patientPhone,
-      bloodGroup: formData.bloodGroup as BloodGroup,
-      donorName: formData.donorName.trim(),
-      donorAge: parseInt(formData.donorAge),
-      donorGender: formData.donorGender as Gender,
-      donorPhone: formData.donorPhone,
-      place: formData.place as Place,
-      department: formData.department as Department,
-      condition: formData.condition as Condition,
-      tests,
-      crossMatch: formData.crossMatch as CrossMatchResult,
-      totalAmount: formData.amount ? parseInt(formData.amount) : 0,
-      date: format(formData.date, 'yyyy-MM-dd'),
-      createdAt: bloodBag?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      const bloodBagData: BloodBag = {
+        id: bloodBag?.id || uuidv4(),
+        invoiceNumber: formData.invoiceNumber,
+        bloodBagNumber: formData.bloodBagNumber,
+        patientName: formData.patientName.trim(),
+        patientAge: parseInt(formData.patientAge),
+        patientGender: formData.patientGender as Gender,
+        patientPhone: formData.patientPhone,
+        bloodGroup: formData.bloodGroup as BloodGroup,
+        donorName: formData.donorName.trim(),
+        donorAge: parseInt(formData.donorAge),
+        donorGender: formData.donorGender as Gender,
+        donorPhone: formData.donorPhone,
+        place: formData.place as Place,
+        department: formData.department as Department,
+        condition: formData.condition as Condition,
+        tests,
+        crossMatch: formData.crossMatch as CrossMatchResult,
+        totalAmount: formData.amount ? parseInt(formData.amount) : 0,
+        date: format(formData.date, 'yyyy-MM-dd'),
+        createdAt: bloodBag?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      await saveBloodBag(bloodBagData)
+      onSave()
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Failed to save blood bag:', error)
+      setErrors({
+        submit: 'Failed to save blood bag. Please try again.',
+      })
+    } finally {
+      setIsSubmitting(false)
     }
-
-    saveBloodBag(bloodBagData)
-    setIsSubmitting(false)
-    onSave()
-    onOpenChange(false)
   }
 
   const getResultOptions = (test: string): TestResult[] => {
