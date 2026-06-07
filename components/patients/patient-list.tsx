@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Patient } from '@/lib/types'
-import { getPatients, deletePatient, searchPatients } from '@/lib/store'
+import { getPatients, deletePatient, searchPatients } from '@/lib/store-electron'
 import { PatientForm } from './patient-form'
 import { PatientPrint } from './patient-print'
 
@@ -18,13 +18,22 @@ export function PatientList() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [editPatient, setEditPatient] = useState<Patient | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [printPatient, setPrintPatient] = useState<Patient | null>(null)
 
-  const loadPatients = () => {
-    setPatients(getPatients())
+  const loadPatients = async () => {
+    setIsLoading(true)
+    try {
+      const data = await getPatients()
+      setPatients(data)
+    } catch (error) {
+      console.error('Failed to load patients:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -34,7 +43,13 @@ export function PatientList() {
 
   const filteredPatients = useMemo(() => {
     if (!searchQuery.trim()) return patients
-    return searchPatients(searchQuery)
+    // Filter locally since searchPatients would be another DB call
+    const lowerQuery = searchQuery.toLowerCase()
+    return patients.filter(p =>
+      p.name.toLowerCase().includes(lowerQuery) ||
+      p.invoiceNumber.toLowerCase().includes(lowerQuery) ||
+      p.phone.includes(searchQuery)
+    )
   }, [patients, searchQuery])
 
   const handleEdit = (patient: Patient) => {
@@ -42,10 +57,14 @@ export function PatientList() {
     setFormOpen(true)
   }
 
-  const handleDelete = (id: string) => {
-    deletePatient(id)
-    loadPatients()
-    setDeleteId(null)
+  const handleDelete = async (id: string) => {
+    try {
+      await deletePatient(id)
+      await loadPatients()
+      setDeleteId(null)
+    } catch (error) {
+      console.error('Failed to delete patient:', error)
+    }
   }
 
   const handleFormClose = (open: boolean) => {
