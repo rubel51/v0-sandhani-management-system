@@ -14,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { Patient, Gender, TestType, TestEntry, BloodGroup, TestResult } from '@/lib/types'
-import { savePatient, isInvoiceNumberUnique, generateNextInvoiceNumber } from '@/lib/store'
+import { savePatient, isInvoiceNumberUnique, generateNextInvoiceNumber } from '@/lib/store-electron'
 
 const GENDERS: Gender[] = ['Male', 'Female', 'Other']
 
@@ -80,15 +80,31 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
         setTestResults(results)
         setCustomAmount(patient.totalAmount?.toString() || '')
       } else {
-        const nextInvoice = generateNextInvoiceNumber()
-        setFormData({
-          invoiceNumber: nextInvoice,
+        const loadNextInvoice = async () => {
+          try {
+            const nextInvoice = await generateNextInvoiceNumber()
+            setFormData(prev => ({
+              ...prev,
+              invoiceNumber: nextInvoice,
+            }))
+          } catch (error) {
+            console.error('Failed to generate invoice number:', error)
+            setFormData(prev => ({
+              ...prev,
+              invoiceNumber: '',
+            }))
+          }
+        }
+        loadNextInvoice()
+        
+        setFormData(prev => ({
+          ...prev,
           name: '',
           age: '',
           gender: '',
           phone: '',
           date: new Date(),
-        })
+        }))
         setSelectedTests([])
         setTestResults({})
         setBloodGroup('')
@@ -102,13 +118,16 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
     return /^\d{11}$/.test(phone)
   }
 
-  const validate = (): boolean => {
+  const validate = async (): Promise<boolean> => {
     const newErrors: Record<string, string> = {}
 
     if (!formData.invoiceNumber.trim()) {
       newErrors.invoiceNumber = 'Invoice number is required'
-    } else if (!isInvoiceNumberUnique(formData.invoiceNumber, patient?.id)) {
-      newErrors.invoiceNumber = 'Invoice number already exists'
+    } else {
+      const isUnique = isInvoiceNumberUnique(formData.invoiceNumber, patient?.id)
+      if (!isUnique) {
+        newErrors.invoiceNumber = 'Invoice number already exists'
+      }
     }
 
     if (!formData.name.trim()) {
@@ -145,39 +164,48 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validate()) return
+    const isValid = await validate()
+    if (!isValid) return
     
     setIsSubmitting(true)
 
-    const tests: TestEntry[] = selectedTests.map(test => ({
-      test,
-      result: testResults[test] || null,
-      bloodGroup: test === 'Blood Grouping' ? bloodGroup as BloodGroup : undefined,
-    }))
+    try {
+      const tests: TestEntry[] = selectedTests.map(test => ({
+        test,
+        result: testResults[test] || null,
+        bloodGroup: test === 'Blood Grouping' ? bloodGroup as BloodGroup : undefined,
+      }))
 
-    const totalAmount = parseInt(customAmount) || 0
+      const totalAmount = parseInt(customAmount) || 0
 
-    const patientData: Patient = {
-      id: patient?.id || uuidv4(),
-      invoiceNumber: formData.invoiceNumber,
-      name: formData.name.trim(),
-      age: parseInt(formData.age),
-      gender: formData.gender as Gender,
-      phone: formData.phone,
-      date: format(formData.date, 'yyyy-MM-dd'),
-      tests,
-      totalAmount,
-      createdAt: patient?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      const patientData: Patient = {
+        id: patient?.id || uuidv4(),
+        invoiceNumber: formData.invoiceNumber,
+        name: formData.name.trim(),
+        age: parseInt(formData.age),
+        gender: formData.gender as Gender,
+        phone: formData.phone,
+        date: format(formData.date, 'yyyy-MM-dd'),
+        tests,
+        totalAmount,
+        createdAt: patient?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      await savePatient(patientData)
+      onSave()
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Failed to save patient:', error)
+      setErrors({
+        submit: 'Failed to save patient. Please try again.',
+      })
+    } finally {
+      setIsSubmitting(false)
     }
-
-    savePatient(patientData)
-    setIsSubmitting(false)
-    onSave()
-    onOpenChange(false)
   }
 
   const toggleTest = (test: TestType) => {

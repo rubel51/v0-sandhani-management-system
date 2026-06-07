@@ -212,8 +212,44 @@ export async function saveSettings(settings: Settings): Promise<void> {
   setToStorage(STORAGE_KEYS.settings, settings)
 }
 
-// Dashboard statistics
-export async function getDashboardStats(fromDate?: string, toDate?: string): Promise<DashboardStats> {
+// Generate next invoice number
+export async function generateNextInvoiceNumber(): Promise<string> {
+  const patients = await getPatients()
+  const bloodBags = await getBloodBags()
+  
+  const allInvoices = [
+    ...patients.map(p => p.invoiceNumber),
+    ...bloodBags.map(b => b.invoiceNumber),
+  ]
+  
+  let maxNum = 0
+  allInvoices.forEach(inv => {
+    const match = inv.match(/^(\d+)/)
+    if (match) {
+      const num = parseInt(match[1], 10)
+      if (num > maxNum) maxNum = num
+    }
+  })
+  
+  return `${maxNum + 1}`
+}
+
+// Generate next blood bag number with suffix
+export async function generateNextBloodBagNumber(suffix: string = ''): Promise<string> {
+  const bloodBags = await getBloodBags()
+  
+  let maxNum = 0
+  bloodBags.forEach(b => {
+    const match = b.bloodBagNumber.match(/^(\d+)/)
+    if (match) {
+      const num = parseInt(match[1], 10)
+      if (num > maxNum) maxNum = num
+    }
+  })
+  
+  const nextNum = maxNum + 1
+  return suffix ? `${nextNum}/${suffix}` : `${nextNum}`
+}
   let patients = await getPatients()
   let bloodBags = await getBloodBags()
   
