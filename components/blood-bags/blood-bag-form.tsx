@@ -192,6 +192,19 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
         newErrors[`result_${test}`] = 'Result required'
       }
     }
+
+    // Other fields
+    if (!formData.place) {
+      newErrors.place = 'Place is required'
+    }
+    if (!formData.department) {
+      newErrors.department = 'Department is required'
+    }
+    if (!formData.condition) {
+      newErrors.condition = 'Condition is required'
+    }
+    if (!formData.crossMatch) {
+      newErrors.crossMatch = 'Cross match result is required'
     }
 
     setErrors(newErrors)
