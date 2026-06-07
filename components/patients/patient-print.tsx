@@ -157,7 +157,7 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
                 </div>
                 <div class="info-item">
                   <span class="info-label">Age:</span>
-                  <span>${patient.age} years</span>
+                  <span>${patient.age} year</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">Gender:</span>
@@ -218,7 +218,7 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
                   </div>
                   <div class="info-item">
                     <span class="info-label">Age:</span>
-                    <span>${patient.age} years</span>
+                    <span>${patient.age} year</span>
                   </div>
                   <div class="info-item">
                     <span class="info-label">Gender:</span>
