@@ -306,7 +306,7 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
                   setFormData(prev => ({ ...prev, name: value }))
                 }}
                 className={errors.name ? 'border-destructive' : ''}
-                placeholder="Name"
+                placeholder="Patients Name"
               />
               {errors.name && (
                 <p className="text-sm text-destructive">{errors.name}</p>
