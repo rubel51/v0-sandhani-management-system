@@ -29,7 +29,7 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
           <title>Blood Bag Report - ${bloodBag.invoiceNumber}</title>
           <style>
             @page {
-              margin-top: 1.5in;
+              margin-top: 2in;
               margin-bottom: 0.5in;
               margin-left: 0.5in;
               margin-right: 0.5in;
@@ -40,17 +40,6 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
               font-size: 11pt;
               line-height: 1.4;
               color: #1a1a1a;
-            }
-            .header {
-              text-align: center;
-              margin-bottom: 20px;
-              padding-bottom: 12px;
-              border-bottom: 2px solid #1e3a5f;
-            }
-            .header h1 {
-              margin: 0;
-              font-size: 16pt;
-              color: #1e3a5f;
             }
             .section {
               border: 2px solid #1e3a5f;
@@ -88,51 +77,34 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
             .results {
               margin-top: 16px;
             }
-            .result-item {
-              display: flex;
-              justify-content: space-between;
-              padding: 6px 0;
-              border-bottom: 1px dotted #ccc;
+            .result-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 8px;
             }
-            .result-item:last-child {
-              border-bottom: none;
-            }
-            .result-label {
-              font-weight: 500;
-            }
-            .result-value {
+            .result-table th {
+              background-color: #f0f0f0;
+              border: 1px solid #1e3a5f;
+              padding: 6px;
+              text-align: left;
               font-weight: 600;
+              font-size: 10pt;
+            }
+            .result-table td {
+              border: 1px solid #1e3a5f;
+              padding: 6px;
+              font-size: 10pt;
             }
             .result-value.positive {
               color: #dc2626;
+              font-weight: 600;
             }
             .result-value.negative {
               color: #16a34a;
-            }
-            .cross-match {
-              margin-top: 16px;
-              padding: 12px;
-              border: 2px solid #1e3a5f;
-              border-radius: 8px;
-              text-align: center;
-            }
-            .cross-match-label {
-              font-weight: bold;
-              font-size: 12pt;
-            }
-            .cross-match-value {
-              font-size: 14pt;
-              font-weight: bold;
-              margin-top: 4px;
-            }
-            .cross-match-value.compatible {
-              color: #16a34a;
-            }
-            .cross-match-value.incompatible {
-              color: #dc2626;
+              font-weight: 600;
             }
             .signature {
-              margin-top: 80px;
+              margin-top: 160px;
               text-align: right;
             }
             .signature-line {
@@ -146,12 +118,8 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1>Blood Bag Report</h1>
-          </div>
-
           <div class="section">
-            <div class="section-title">Other Information</div>
+            <div class="section-title">Invoice & Date Information</div>
             <div class="info-grid">
               <div class="info-item">
                 <span class="info-label">Invoice No:</span>
@@ -164,18 +132,6 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
               <div class="info-item">
                 <span class="info-label">Date:</span>
                 <span class="info-value">${format(new Date(bloodBag.date), 'dd/MM/yyyy')}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Condition:</span>
-                <span class="info-value">${bloodBag.condition}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Place:</span>
-                <span class="info-value">${bloodBag.place}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Department:</span>
-                <span class="info-value">${bloodBag.department}</span>
               </div>
             </div>
           </div>
@@ -226,28 +182,45 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
                   <span class="info-label">Phone:</span>
                   <span class="info-value">${bloodBag.donorPhone}</span>
                 </div>
+                <div class="info-item">
+                  <span class="info-label">Condition:</span>
+                  <span class="info-value">${bloodBag.condition}</span>
+                </div>
               </div>
             </div>
           </div>
 
           <div class="results">
-            <h3 style="margin-bottom: 12px; color: #1e3a5f; font-size: 11pt;">Test Results</h3>
-            ${bloodBag.tests.map(t => `
-              <div class="result-item">
-                <span class="result-label">${t.test}</span>
-                <span class="result-value ${t.result === 'Positive' || t.result === 'Reactive' ? 'positive' : 'negative'}">
-                  ${t.result || 'Pending'}
-                </span>
-              </div>
-            `).join('')}
+            <table class="result-table">
+              <thead>
+                <tr>
+                  <th>Test Name</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${bloodBag.tests.map(t => `
+                  <tr>
+                    <td>${t.test}</td>
+                    <td class="result-value ${t.result === 'Positive' || t.result === 'Reactive' ? 'positive' : 'negative'}">
+                      ${t.result || 'Pending'}
+                    </td>
+                  </tr>
+                `).join('')}
+                <tr>
+                  <td><strong>Cross Matching</strong></td>
+                  <td class="result-value ${bloodBag.crossMatch === 'Compatible' ? 'negative' : 'positive'}">
+                    ${bloodBag.crossMatch}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
-          <div class="cross-match">
-            <div class="cross-match-label">Cross Matching</div>
-            <div class="cross-match-value ${bloodBag.crossMatch === 'Compatible' ? 'compatible' : 'incompatible'}">
-              ${bloodBag.crossMatch}
-            </div>
+          <div class="signature">
+            <div class="signature-line">Signature</div>
           </div>
+        </body>
 
           <div class="signature">
             <div class="signature-line">Signature</div>
@@ -275,24 +248,14 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
           </DialogTitle>
         </DialogHeader>
 
-        <div ref={printRef} className="max-h-[60vh] overflow-y-auto rounded-lg border bg-white p-6">
-          {/* Header */}
-          <div className="mb-4 border-b-2 border-primary pb-3 text-center">
-            <h1 className="text-lg font-bold">
-              <span>Blood Bag Report</span>
-            </h1>
-          </div>
-
-          {/* Other Info */}
+        <div ref={printRef} className="max-h-[60vh] overflow-y-auto rounded-lg border bg-white p-6 text-sm">
+          {/* Invoice & Date */}
           <div className="mb-4 rounded-lg border p-3">
-            <h3 className="mb-2 border-b pb-1 text-sm font-semibold">Other Information</h3>
+            <h3 className="mb-2 border-b pb-1 font-semibold">Invoice & Date Information</h3>
             <div className="grid grid-cols-2 gap-1 text-xs">
               <div><strong>Invoice:</strong> {bloodBag.invoiceNumber}</div>
               <div><strong>Bag No:</strong> {bloodBag.bloodBagNumber}</div>
               <div><strong>Date:</strong> {format(new Date(bloodBag.date), 'dd/MM/yyyy')}</div>
-              <div><strong>Condition:</strong> {bloodBag.condition}</div>
-              <div><strong>Place:</strong> {bloodBag.place}</div>
-              <div><strong>Department:</strong> {bloodBag.department}</div>
             </div>
           </div>
 
@@ -305,46 +268,52 @@ export function BloodBagPrint({ open, onOpenChange, bloodBag }: BloodBagPrintPro
                 <div><strong>Age:</strong> {bloodBag.patientAge} years</div>
                 <div><strong>Gender:</strong> {bloodBag.patientGender}</div>
                 <div><strong>Phone:</strong> {bloodBag.patientPhone}</div>
-                <div><strong>Blood Group:</strong> <span className="font-bold text-[oklch(0.55_0.22_25)]">{bloodBag.bloodGroup}</span></div>
+                <div><strong>Blood Group:</strong> <span className="font-bold text-destructive">{bloodBag.bloodGroup}</span></div>
               </div>
             </div>
 
-            <div className="rounded-lg border-2 border-[oklch(0.55_0.22_25)] p-3">
-              <h3 className="mb-2 border-b pb-1 text-sm font-semibold text-[oklch(0.55_0.22_25)]">Donor Information</h3>
+            <div className="rounded-lg border-2 border-destructive p-3">
+              <h3 className="mb-2 border-b pb-1 text-sm font-semibold text-destructive">Donor Information</h3>
               <div className="space-y-1 text-xs">
                 <div><strong>Name:</strong> {bloodBag.donorName}</div>
                 <div><strong>Age:</strong> {bloodBag.donorAge} years</div>
                 <div><strong>Gender:</strong> {bloodBag.donorGender}</div>
                 <div><strong>Phone:</strong> {bloodBag.donorPhone}</div>
+                <div><strong>Condition:</strong> {bloodBag.condition}</div>
               </div>
             </div>
           </div>
 
-          {/* Test Results */}
+          {/* Test Results Table */}
           <div className="mb-4">
-            <h3 className="mb-2 text-sm font-semibold text-primary">Test Results</h3>
-            <div className="space-y-1">
-              {bloodBag.tests.map((test, idx) => (
-                <div key={idx} className="flex justify-between border-b border-dotted border-muted-foreground/30 py-1 text-xs">
-                  <span className="font-medium">{test.test}</span>
-                  <span className={test.result === 'Positive' || test.result === 'Reactive' ? 'font-semibold text-destructive' : 'font-semibold text-green-600'}>
-                    {test.result || 'Pending'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Cross Match */}
-          <div className="rounded-lg border-2 border-primary p-3 text-center">
-            <div className="text-sm font-semibold">Cross Matching</div>
-            <div className={`text-lg font-bold ${bloodBag.crossMatch === 'Compatible' ? 'text-green-600' : 'text-destructive'}`}>
-              {bloodBag.crossMatch}
-            </div>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="border border-primary bg-gray-100 p-2 text-left text-xs font-semibold">Test Name</th>
+                  <th className="border border-primary bg-gray-100 p-2 text-left text-xs font-semibold">Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bloodBag.tests.map((test, idx) => (
+                  <tr key={idx}>
+                    <td className="border border-primary p-2 text-xs">{test.test}</td>
+                    <td className={`border border-primary p-2 text-xs font-semibold ${test.result === 'Positive' || test.result === 'Reactive' ? 'text-destructive' : 'text-green-600'}`}>
+                      {test.result || 'Pending'}
+                    </td>
+                  </tr>
+                ))}
+                <tr>
+                  <td className="border border-primary p-2 text-xs font-semibold">Cross Matching</td>
+                  <td className={`border border-primary p-2 text-xs font-semibold ${bloodBag.crossMatch === 'Compatible' ? 'text-green-600' : 'text-destructive'}`}>
+                    {bloodBag.crossMatch}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           {/* Signature */}
-          <div className="mt-16 text-right">
+          <div className="mt-32 text-right">
             <div className="ml-auto w-40 border-t border-foreground pt-1 text-center text-xs">
               Signature
             </div>
