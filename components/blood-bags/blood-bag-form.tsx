@@ -186,18 +186,12 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
       newErrors.donorPhone = 'Phone must be 11 digits'
     }
 
-    // Other fields
-    if (!formData.place) {
-      newErrors.place = 'Place is required'
+    // Test results validation
+    for (const test of BLOOD_BAG_TESTS) {
+      if (!testResults[test]) {
+        newErrors[`result_${test}`] = 'Result required'
+      }
     }
-    if (!formData.department) {
-      newErrors.department = 'Department is required'
-    }
-    if (!formData.condition) {
-      newErrors.condition = 'Condition is required'
-    }
-    if (!formData.crossMatch) {
-      newErrors.crossMatch = 'Cross match result is required'
     }
 
     setErrors(newErrors)
@@ -279,7 +273,11 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
               <Input
                 id="invoiceNumber"
                 value={formData.invoiceNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '')
+                  setFormData(prev => ({ ...prev, invoiceNumber: value }))
+                }}
+                placeholder="Numbers only"
                 className={errors.invoiceNumber ? 'border-destructive' : ''}
               />
               {errors.invoiceNumber && <p className="text-sm text-destructive">{errors.invoiceNumber}</p>}
@@ -290,7 +288,11 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
               <Input
                 id="bloodBagNumber"
                 value={formData.bloodBagNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, bloodBagNumber: e.target.value }))}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9/]/g, '')
+                  setFormData(prev => ({ ...prev, bloodBagNumber: value }))
+                }}
+                placeholder="Numbers/letters only"
                 className={errors.bloodBagNumber ? 'border-destructive' : ''}
               />
               {errors.bloodBagNumber && <p className="text-sm text-destructive">{errors.bloodBagNumber}</p>}
@@ -517,7 +519,7 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
 
           {/* Test Results */}
           <div>
-            <h3 className="mb-4 font-semibold">Test Results</h3>
+            <h3 className="mb-4 font-semibold">Test Results *</h3>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {BLOOD_BAG_TESTS.map((test) => (
                 <div key={test} className="space-y-2 rounded-lg border p-3">
@@ -526,7 +528,7 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
                     value={testResults[test] || ''}
                     onValueChange={(value) => setTestResults(prev => ({ ...prev, [test]: value as TestResult }))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className={errors[`result_${test}`] ? 'border-destructive' : ''}>
                       <SelectValue placeholder="Select result" />
                     </SelectTrigger>
                     <SelectContent>
@@ -535,6 +537,9 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors[`result_${test}`] && (
+                    <p className="text-sm text-destructive">{errors[`result_${test}`]}</p>
+                  )}
                 </div>
               ))}
             </div>
