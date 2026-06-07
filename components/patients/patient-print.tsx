@@ -35,7 +35,7 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
           <title>Patient Report - ${patient.invoiceNumber}</title>
           <style>
             @page {
-              margin-top: 1.5in;
+              margin-top: 2in;
               margin-bottom: 0.5in;
               margin-left: 0.5in;
               margin-right: 0.5in;
@@ -52,17 +52,6 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
             }
             .page:last-child {
               page-break-after: avoid;
-            }
-            .header {
-              text-align: center;
-              margin-bottom: 24px;
-              padding-bottom: 16px;
-              border-bottom: 2px solid #1e3a5f;
-            }
-            .header h1 {
-              margin: 0;
-              font-size: 18pt;
-              color: #1e3a5f;
             }
             .info-box {
               border: 2px solid #1e3a5f;
@@ -85,26 +74,29 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
             .results {
               margin-top: 24px;
             }
-            .result-item {
-              display: flex;
-              justify-content: space-between;
-              padding: 8px 0;
-              border-bottom: 1px dotted #ccc;
+            .result-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 12px;
             }
-            .result-item:last-child {
-              border-bottom: none;
-            }
-            .result-label {
-              font-weight: 500;
-            }
-            .result-value {
+            .result-table th {
+              background-color: #f0f0f0;
+              border: 1px solid #1e3a5f;
+              padding: 8px;
+              text-align: left;
               font-weight: 600;
+            }
+            .result-table td {
+              border: 1px solid #1e3a5f;
+              padding: 8px;
             }
             .result-value.positive {
               color: #dc2626;
+              font-weight: 600;
             }
             .result-value.negative {
               color: #16a34a;
+              font-weight: 600;
             }
             .signature {
               margin-top: 120px;
@@ -149,10 +141,6 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
         </head>
         <body>
           <div class="page">
-            <div class="header">
-              <h1>Test Report</h1>
-            </div>
-            
             <div class="info-box">
               <div class="info-grid">
                 <div class="info-item">
@@ -182,18 +170,29 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
               </div>
             </div>
 
+            <h2 style="text-align: center; font-size: 18pt; color: #1e3a5f; margin: 24px 0;">Test Report</h2>
+
             <div class="results">
-              <h3 style="margin-bottom: 16px; color: #1e3a5f;">Test Results</h3>
-              ${patient.tests
-                .filter(t => t.test !== 'Blood Grouping')
-                .map(t => `
-                  <div class="result-item">
-                    <span class="result-label">${t.test}</span>
-                    <span class="result-value ${t.result === 'Positive' || t.result === 'Reactive' ? 'positive' : 'negative'}">
-                      ${t.result || 'Pending'}
-                    </span>
-                  </div>
-                `).join('')}
+              <table class="result-table">
+                <thead>
+                  <tr>
+                    <th>Test Name</th>
+                    <th>Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${patient.tests
+                    .filter(t => t.test !== 'Blood Grouping')
+                    .map(t => `
+                      <tr>
+                        <td>${t.test}</td>
+                        <td class="result-value ${t.result === 'Positive' || t.result === 'Reactive' ? 'positive' : 'negative'}">
+                          ${t.result || 'Pending'}
+                        </td>
+                      </tr>
+                    `).join('')}
+                </tbody>
+              </table>
             </div>
 
             <div class="signature">
@@ -203,10 +202,6 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
 
           ${hasBloodGroup ? `
             <div class="page">
-              <div class="header">
-                <h1>Blood Grouping Report</h1>
-              </div>
-              
               <div class="info-box">
                 <div class="info-grid">
                   <div class="info-item">
@@ -236,8 +231,9 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
                 </div>
               </div>
 
+              <h2 style="text-align: center; font-size: 18pt; color: #1e3a5f; margin: 24px 0;">Blood Grouping Report</h2>
+
               <div class="blood-group-page">
-                <h2>Blood Grouping Report</h2>
                 <div class="blood-group-result">
                   <span class="blood-group-label">Blood Group..................................................</span>
                   <span class="blood-group-value">${bloodGroupTest?.bloodGroup?.split(' ')[0]}</span>
@@ -277,13 +273,6 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
         </DialogHeader>
 
         <div ref={printRef} className="rounded-lg border bg-white p-6">
-          {/* Header */}
-          <div className="mb-6 border-b-2 border-primary pb-4 text-center">
-            <h1 className="text-xl font-bold">
-              <span>Test Report</span>
-            </h1>
-          </div>
-
           {/* Patient Info Box */}
           <div className="mb-6 rounded-lg border-2 border-primary p-4">
             <div className="grid grid-cols-2 gap-2 text-sm">
@@ -296,41 +285,30 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
             </div>
           </div>
 
-          {/* Test Results */}
-          <div>
-            <h3 className="mb-4 font-semibold text-primary">Test Results</h3>
-            <div className="space-y-2">
-              {patient.tests.filter(t => t.test !== 'Blood Grouping').map((test, idx) => (
-                <div key={idx} className="flex justify-between border-b border-dotted border-muted-foreground/30 py-2">
-                  <span className="font-medium">{test.test}</span>
-                  <span className={test.result === 'Positive' || test.result === 'Reactive' ? 'font-semibold text-destructive' : 'font-semibold text-green-600'}>
-                    {test.result || 'Pending'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Test Report Heading */}
+          <h2 className="mb-6 text-center text-xl font-bold text-primary">Test Report</h2>
 
-          {/* Blood Group if exists */}
-          {patient.tests.find(t => t.test === 'Blood Grouping')?.bloodGroup && (
-            <div className="mt-6 rounded-lg border-2 border-primary p-4">
-              <h3 className="mb-4 border-b pb-2 text-center font-semibold text-primary">Blood Grouping Report</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between border-b border-dotted border-muted-foreground/30 py-2">
-                  <span className="font-medium">Blood Group..........................</span>
-                  <span className="font-bold text-[oklch(0.55_0.22_25)]">
-                    {patient.tests.find(t => t.test === 'Blood Grouping')?.bloodGroup?.split(' ')[0]}
-                  </span>
-                </div>
-                <div className="flex justify-between border-b border-dotted border-muted-foreground/30 py-2">
-                  <span className="font-medium">Rh Factor................................</span>
-                  <span className="font-bold text-[oklch(0.55_0.22_25)]">
-                    {patient.tests.find(t => t.test === 'Blood Grouping')?.bloodGroup?.split(' ')[1]}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Test Results Table */}
+          <div className="mb-6">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="border border-primary bg-gray-100 p-2 text-left font-semibold">Test Name</th>
+                  <th className="border border-primary bg-gray-100 p-2 text-left font-semibold">Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {patient.tests.filter(t => t.test !== 'Blood Grouping').map((test, idx) => (
+                  <tr key={idx}>
+                    <td className="border border-primary p-2">{test.test}</td>
+                    <td className={`border border-primary p-2 font-semibold ${test.result === 'Positive' || test.result === 'Reactive' ? 'text-destructive' : 'text-green-600'}`}>
+                      {test.result || 'Pending'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Signature */}
           <div className="mt-24 text-right">

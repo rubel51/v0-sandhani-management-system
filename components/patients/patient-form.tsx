@@ -86,12 +86,14 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
             setFormData(prev => ({
               ...prev,
               invoiceNumber: nextInvoice,
+              date: new Date(),
             }))
           } catch (error) {
             console.error('Failed to generate invoice number:', error)
             setFormData(prev => ({
               ...prev,
               invoiceNumber: '',
+              date: new Date(),
             }))
           }
         }
@@ -103,7 +105,6 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
           age: '',
           gender: '',
           phone: '',
-          date: new Date(),
         }))
         setSelectedTests([])
         setTestResults({})
@@ -154,6 +155,14 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
 
     if (selectedTests.includes('Blood Grouping') && !bloodGroup) {
       newErrors.bloodGroup = 'Blood group must be selected'
+    }
+
+    // Validate all test results are filled
+    for (const test of selectedTests) {
+      if (test === 'Blood Grouping') continue
+      if (!testResults[test]) {
+        newErrors[`result_${test}`] = 'Result required'
+      }
     }
 
     if (!customAmount || parseInt(customAmount) < 0) {
@@ -274,7 +283,13 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
                   <Calendar
                     mode="single"
                     selected={formData.date}
-                    onSelect={(date) => date && setFormData(prev => ({ ...prev, date }))}
+                    onSelect={(date) => {
+                      if (date) {
+                        setFormData(prev => ({ ...prev, date }))
+                        // Close popover by simulating escape key
+                        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+                      }
+                    }}
                     initialFocus
                   />
                 </PopoverContent>
@@ -400,7 +415,7 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
           </div>
           {selectedTests.length > 0 && (
             <div className="space-y-3">
-              <Label>Test Results</Label>
+              <Label>Test Results *</Label>
               <div className="grid gap-3 sm:grid-cols-2">
                 {selectedTests.map((test) => (
                   <div key={test} className="space-y-2 rounded-lg border p-3">
@@ -426,22 +441,45 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
                           <p className="text-sm text-destructive">{errors.bloodGroup}</p>
                         )}
                       </div>
+                    ) : test.includes('Blood Sugar') ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            placeholder="Enter value"
+                            value={testResults[test] || ''}
+                            onChange={(e) => setTestResults(prev => ({ ...prev, [test]: e.target.value as TestResult }))}
+                            className={errors[`result_${test}`] ? 'border-destructive' : ''}
+                          />
+                          <span className="text-sm text-muted-foreground whitespace-nowrap">mmol/L</span>
+                        </div>
+                        {errors[`result_${test}`] && (
+                          <p className="text-sm text-destructive">{errors[`result_${test}`]}</p>
+                        )}
+                      </div>
                     ) : (
-                      <Select
-                        value={testResults[test] || ''}
-                        onValueChange={(value) => setTestResults(prev => ({ ...prev, [test]: value as TestResult }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select result" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {getResultOptions(test).map((result) => (
-                            <SelectItem key={result} value={result}>
-                              {result}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-2">
+                        <Select
+                          value={testResults[test] || ''}
+                          onValueChange={(value) => setTestResults(prev => ({ ...prev, [test]: value as TestResult }))}
+                        >
+                          <SelectTrigger className={errors[`result_${test}`] ? 'border-destructive' : ''}>
+                            <SelectValue placeholder="Select result" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getResultOptions(test).map((result) => (
+                              <SelectItem key={result} value={result}>
+                                {result}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {errors[`result_${test}`] && (
+                          <p className="text-sm text-destructive">{errors[`result_${test}`]}</p>
+                        )}
+                      </div>
                     )}
                   </div>
                 ))}
