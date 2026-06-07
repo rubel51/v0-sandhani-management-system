@@ -449,8 +449,11 @@ export function PatientForm({ open, onOpenChange, patient, onSave }: PatientForm
                             step="0.1"
                             min="0"
                             placeholder="Enter value"
-                            value={testResults[test] || ''}
-                            onChange={(e) => setTestResults(prev => ({ ...prev, [test]: e.target.value as TestResult }))}
+                            value={testResults[test]?.replace(' mmol/L', '') || ''}
+                            onChange={(e) => {
+                              const value = e.target.value ? `${e.target.value} mmol/L` : ''
+                              setTestResults(prev => ({ ...prev, [test]: value as TestResult }))
+                            }}
                             className={errors[`result_${test}`] ? 'border-destructive' : ''}
                           />
                           <span className="text-sm text-muted-foreground whitespace-nowrap">mmol/L</span>

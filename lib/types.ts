@@ -70,6 +70,7 @@ export interface BloodBag {
 
 export interface Settings {
   bloodBagNumberSuffix: string
+  hospitalName?: string
 }
 
 export interface DashboardStats {

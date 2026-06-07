@@ -74,21 +74,28 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
             .results {
               margin-top: 24px;
             }
-            .result-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 12px;
+            .result-line {
+              display: flex;
+              justify-content: space-between;
+              padding: 6px 0;
+              font-size: 11pt;
             }
-            .result-table th {
-              background-color: #f0f0f0;
-              border: 1px solid #1e3a5f;
-              padding: 8px;
-              text-align: left;
-              font-weight: 600;
+            .result-name {
+              flex: 0 0 auto;
             }
-            .result-table td {
-              border: 1px solid #1e3a5f;
-              padding: 8px;
+            .result-dots {
+              flex: 1 1 auto;
+              text-align: center;
+              padding: 0 8px;
+              letter-spacing: 2px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+            .result-value {
+              flex: 0 0 auto;
+              text-align: right;
+              min-width: 80px;
             }
             .result-value.positive {
               color: #dc2626;
@@ -173,26 +180,22 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
             <h2 style="text-align: center; font-size: 18pt; color: #1e3a5f; margin: 24px 0;">Test Report</h2>
 
             <div class="results">
-              <table class="result-table">
-                <thead>
-                  <tr>
-                    <th>Test Name</th>
-                    <th>Result</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${patient.tests
-                    .filter(t => t.test !== 'Blood Grouping')
-                    .map(t => `
-                      <tr>
-                        <td>${t.test}</td>
-                        <td class="result-value ${t.result === 'Positive' || t.result === 'Reactive' ? 'positive' : 'negative'}">
-                          ${t.result || 'Pending'}
-                        </td>
-                      </tr>
-                    `).join('')}
-                </tbody>
-              </table>
+              ${patient.tests
+                .filter(t => t.test !== 'Blood Grouping')
+                .map(t => {
+                  const resultValue = t.result || 'Pending'
+                  const testName = t.test
+                  const dotCount = Math.max(1, 50 - testName.length - resultValue.length)
+                  const dots = '.'.repeat(dotCount)
+                  const isPositive = resultValue === 'Positive' || resultValue === 'Reactive'
+                  return `
+                    <div class="result-line">
+                      <span class="result-name">${testName}</span>
+                      <span class="result-dots">${dots}</span>
+                      <span class="result-value ${isPositive ? 'positive' : 'negative'}">${resultValue}</span>
+                    </div>
+                  `
+                }).join('')}
             </div>
 
             <div class="signature">
@@ -288,26 +291,21 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
           {/* Test Report Heading */}
           <h2 className="mb-6 text-center text-xl font-bold text-primary">Test Report</h2>
 
-          {/* Test Results Table */}
+          {/* Test Results Pathology Format */}
           <div className="mb-6">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="border border-primary bg-gray-100 p-2 text-left font-semibold">Test Name</th>
-                  <th className="border border-primary bg-gray-100 p-2 text-left font-semibold">Result</th>
-                </tr>
-              </thead>
-              <tbody>
-                {patient.tests.filter(t => t.test !== 'Blood Grouping').map((test, idx) => (
-                  <tr key={idx}>
-                    <td className="border border-primary p-2">{test.test}</td>
-                    <td className={`border border-primary p-2 font-semibold ${test.result === 'Positive' || test.result === 'Reactive' ? 'text-destructive' : 'text-green-600'}`}>
-                      {test.result || 'Pending'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {patient.tests.filter(t => t.test !== 'Blood Grouping').map((test, idx) => {
+              const resultValue = test.result || 'Pending'
+              const testName = test.test
+              return (
+                <div key={idx} className="flex justify-between py-1 text-sm">
+                  <span>{testName}</span>
+                  <span className="flex-1 border-b border-dotted border-foreground mx-2"></span>
+                  <span className={`font-semibold ${resultValue === 'Positive' || resultValue === 'Reactive' ? 'text-destructive' : 'text-green-600'}`}>
+                    {resultValue}
+                  </span>
+                </div>
+              )
+            })}
           </div>
 
           {/* Signature */}

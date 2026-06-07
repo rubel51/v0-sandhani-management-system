@@ -57,6 +57,7 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
   const [testResults, setTestResults] = useState<Record<string, TestResult | null>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -95,6 +96,7 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
               ...prev,
               invoiceNumber: nextInvoice,
               bloodBagNumber: nextBloodBagNo,
+              place: (settings.hospitalName || 'DDCH') as Place,
             }))
           } catch (error) {
             console.error('Failed to generate numbers:', error)
@@ -313,7 +315,7 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
 
             <div className="space-y-2">
               <Label htmlFor="date">Date *</Label>
-              <Popover>
+              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -324,7 +326,12 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
                   <Calendar
                     mode="single"
                     selected={formData.date}
-                    onSelect={(date) => date && setFormData(prev => ({ ...prev, date }))}
+                    onSelect={(date) => {
+                      if (date) {
+                        setFormData(prev => ({ ...prev, date }))
+                        setDatePickerOpen(false)
+                      }
+                    }}
                     initialFocus
                   />
                 </PopoverContent>
@@ -342,8 +349,12 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
                 <Label>Patient Name *</Label>
                 <Input
                   value={formData.patientName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, patientName: e.target.value }))}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^a-zA-Z\s.]/g, '')
+                    setFormData(prev => ({ ...prev, patientName: value }))
+                  }}
                   className={errors.patientName ? 'border-destructive' : ''}
+                  placeholder="Alphabets only"
                 />
                 {errors.patientName && <p className="text-sm text-destructive">{errors.patientName}</p>}
               </div>
@@ -414,8 +425,12 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
                 <Label>Donor Name *</Label>
                 <Input
                   value={formData.donorName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, donorName: e.target.value }))}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^a-zA-Z\s.]/g, '')
+                    setFormData(prev => ({ ...prev, donorName: value }))
+                  }}
                   className={errors.donorName ? 'border-destructive' : ''}
+                  placeholder="Alphabets only"
                 />
                 {errors.donorName && <p className="text-sm text-destructive">{errors.donorName}</p>}
               </div>
