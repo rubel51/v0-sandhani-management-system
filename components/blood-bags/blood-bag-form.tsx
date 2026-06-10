@@ -304,7 +304,7 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
                 id="bloodBagNumber"
                 value={formData.bloodBagNumber}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9/]/g, '')
+                  const value = e.target.value.replace(/[^0-9()\/-]/g, '')
                   setFormData(prev => ({ ...prev, bloodBagNumber: value }))
                 }}
                 placeholder="Numbers/letters only"

@@ -177,7 +177,7 @@ export function PatientPrint({ open, onOpenChange, patient }: PatientPrintProps)
               </div>
             </div>
 
-            <h2 style="text-align: center; font-size: 18pt; color: #1e3a5f; margin: 24px 0;">Test Report</h2>
+            <h2 style="text-align: center; font-size: 18pt; color: #1e3a5f; margin: 24px 0; text-decoration: underline;">Test Report</h2>
 
             <div class="results">
               ${patient.tests
