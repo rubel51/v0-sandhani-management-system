@@ -430,7 +430,7 @@ export function BloodBagForm({ open, onOpenChange, bloodBag, onSave }: BloodBagF
                     setFormData(prev => ({ ...prev, donorName: value }))
                   }}
                   className={errors.donorName ? 'border-destructive' : ''}
-                  placeholder="Alphabets only"
+                  placeholder="Donor Name"
                 />
                 {errors.donorName && <p className="text-sm text-destructive">{errors.donorName}</p>}
               </div>
