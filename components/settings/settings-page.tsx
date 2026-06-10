@@ -97,12 +97,16 @@ export function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="rounded-lg bg-muted p-4">
             <h3 className="font-semibold">
-              <span className="text-destructive">SANDHANI</span> Dhaka Dental College Unit
+              <span className="text-destructive">SANDHANI</span> Dhaka Dental College Unit.
+              <br />
+              © 2026. Report Management System.
             </h3>
             <p className="mt-2 text-sm text-muted-foreground">
               Developed by Dr. Shaikh Mahamudul Hasan
               <br />
-              Former President, 2016-17 Session
+              (Former President, 2016-17 Session)
+              <br />
+              dr.smhasan020@gmail.com
             </p>
           </div>
 
